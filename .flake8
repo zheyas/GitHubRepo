@@ -1,0 +1,13 @@
+[flake8]
+# Максимальная длина строки
+max-line-length = 119
+
+# Папки и файлы для исключения из проверки
+exclude =
+    .git,
+    __pycache__,
+    venv,
+    .mypy_cache,
+    .pytest_cache,
+    build,
+    dist
