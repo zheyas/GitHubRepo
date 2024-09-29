@@ -30,3 +30,17 @@ def mask_account_card(info: str) -> str:
         return f"{card_or_account_type} {masked_number}"
     else:
         return "Invalid input format"
+def get_date(info: str) -> str:
+    """
+    Маскирует номер карты или счета в строке.
+
+    Аргументы:
+    info (str): строка формата Visa Platinum 7000792289606361, Maestro 7000792289606361, или Счет 73654108430135874305.
+
+    Возвращает:
+    str: строка с замаскированным номером карты или счета.
+    """
+    date = info.split("-")
+    return (f"{date[2][0:2]}.{date[1]}.{date[0]}")
+
+
