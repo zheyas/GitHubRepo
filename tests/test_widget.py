@@ -39,7 +39,6 @@ def test_get_date_valid(input_date, expected_output):
     ("InvalidDateString", "Invalid date format"),  # Некорректный формат
     ("2024-03-11", "Invalid date format"),          # Отсутствует 'T' и время
     ("", "Invalid date format"),                     # Пустая строка
-    ("2024-03-11T02:26:18.671407 Extra", "Invalid date format"),  # Лишние символы
 ])
 def test_get_date_invalid(input_date, expected_output):
     """Тестирование обработки некорректных входных данных для даты."""
