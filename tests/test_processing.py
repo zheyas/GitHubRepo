@@ -1,5 +1,7 @@
 import pytest
-from src.processing import filter_by_state,sort_by_date  # Убедитесь, что путь к функции правильный
+
+from src.processing import filter_by_state, sort_by_date  # Убедитесь, что путь к функции правильный
+
 
 # Фикстура для тестовых данных
 @pytest.fixture
