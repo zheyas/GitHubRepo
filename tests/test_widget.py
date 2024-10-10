@@ -15,6 +15,7 @@ def test_mask_account_card_valid(input_str, expected_output):
     """Тестирование корректной работы маскировки карт и счетов."""
     assert mask_account_card(input_str) == expected_output
 
+
 @pytest.mark.parametrize("input_str, expected_output", [
     ("InvalidFormat", "Invalid input"),
     ("Visa 1234ABCD5678", "Invalid card/account number format"),
@@ -26,6 +27,7 @@ def test_mask_account_card_invalid(input_str, expected_output):
     """Тестирование обработки некорректных входных данных."""
     assert mask_account_card(input_str) == expected_output
 
+
 # Тесты для функции get_date
 @pytest.mark.parametrize("input_date, expected_output", [
     ("2024-03-11T02:26:18.671407", "11.03.2024"),
@@ -36,6 +38,7 @@ def test_mask_account_card_invalid(input_str, expected_output):
 def test_get_date_valid(input_date, expected_output):
     """Тестирование правильного преобразования дат."""
     assert get_date(input_date) == expected_output
+
 
 @pytest.mark.parametrize("input_date, expected_output", [
     ("InvalidDateString", "Invalid date format"),  # Некорректный формат

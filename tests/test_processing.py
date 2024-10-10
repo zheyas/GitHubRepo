@@ -14,6 +14,7 @@ def test_data():
         {'id': 5, 'state': 'EXECUTED'},
     ]
 
+
 # Параметризованный тест для фильтрации по состоянию
 @pytest.mark.parametrize("state, expected", [
     ('EXECUTED', [{'id': 1, 'state': 'EXECUTED'}, {'id': 3, 'state': 'EXECUTED'}, {'id': 5, 'state': 'EXECUTED'}]),
@@ -25,6 +26,7 @@ def test_filter_by_state(test_data, state, expected):
     result = filter_by_state(test_data, state)
     assert result == expected
 
+
 @pytest.fixture
 def test_data1():
     return [
@@ -34,6 +36,7 @@ def test_data1():
         {'id': 4, 'date': '2022-11-20T12:00:00.000000'},
         {'id': 5, 'date': '2023-05-30T09:30:45.123456'},
     ]
+
 
 # Тестирование сортировки по дате в порядке убывания
 def test_sort_by_date_descending(test_data1):
@@ -47,6 +50,7 @@ def test_sort_by_date_descending(test_data1):
     result = sort_by_date(test_data1, reverse=True)
     assert result == expected
 
+
 # Тестирование сортировки по дате в порядке возрастания
 def test_sort_by_date_ascending(test_data1):
     expected = [
@@ -58,6 +62,7 @@ def test_sort_by_date_ascending(test_data1):
     ]
     result = sort_by_date(test_data1, reverse=False)
     assert result == expected
+
 
 # Тестирование некорректных форматов дат
 @pytest.mark.parametrize("invalid_data", [
