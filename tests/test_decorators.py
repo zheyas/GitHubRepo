@@ -1,6 +1,8 @@
 
-import pytest
 from typing import Any
+
+import pytest
+
 from src.decorators import log  # Замените 'your_module_name' на фактическое имя вашего модуля
 
 
