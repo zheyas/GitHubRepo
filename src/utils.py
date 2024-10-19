@@ -1,6 +1,34 @@
 import json
 import os
 
+import requests
+from dotenv import load_dotenv
+
+load_dotenv()
+API_KEY = os.getenv("API_KEY")
+
+
+def amount(transaction):
+    currency = transaction["operationAmount"]["currency"]["code"]
+    amount_value = transaction["operationAmount"]["amount"]
+
+    # Если валюта RUB, возвращаем исходную сумму
+    if currency == "RUB":
+        return amount_value
+
+    # Если валюта не RUB, отправляем запрос к API для конвертации
+    url = f"https://api.apilayer.com/exchangerates_data/convert?to=RUB&from={currency}&amount={amount_value}"
+    headers = {"apikey": API_KEY}
+
+    response = requests.get(url, headers=headers)
+
+    # Проверяем успешность запроса и наличие нужного поля в ответе
+    if response.status_code != 200 or "result" not in response.json():
+        raise RuntimeError("API request failed")
+
+    # Возвращаем сконвертированную сумму
+    return response.json()["result"]
+
 
 def load_transactions(file_path):
     # Проверяем, существует ли файл
