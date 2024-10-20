@@ -3,8 +3,10 @@ import logging
 logger = logging.getLogger('masks')
 file_handler = logging.FileHandler(r'D:\pyton\Курсы\pythonProjectN1\logs\masks.log', 'w')
 file_formatter = logging.Formatter('%(asctime)s - %(name)s: %(message)s')
+
 file_handler.setFormatter(file_formatter)
 logger.addHandler(file_handler)
+logger.setLevel(logging.DEBUG)
 
 
 def get_mask_card_number(card_number: int) -> str:
