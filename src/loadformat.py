@@ -67,4 +67,4 @@ def read_csv_financial_operations(file_path):
 
 # Пример использования
 file_path = r"D:\pyton\Курсы\pythonProjectN1\data\file.csv"
-read_csv_financial_operations(file_path)
+
