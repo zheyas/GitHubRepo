@@ -20,4 +20,8 @@ def sort_by_date(data, reverse=True):
     :param reverse: порядок сортировки. True для убывания, False для возрастания.
     :return: новый список, отсортированный по ключу 'date'
     """
-    return sorted(data, key=lambda x: datetime.strptime(x['date'], '%Y-%m-%dT%H:%M:%S.%f'), reverse=reverse)
+    # Фильтруем только те элементы, у которых есть ключ 'date'
+    filtered_data = [item for item in data if 'date' in item]
+
+    # Сортируем отфильтрованный список
+    return sorted(filtered_data, key=lambda x: datetime.strptime(x['date'], '%Y-%m-%dT%H:%M:%S.%f'), reverse=reverse)

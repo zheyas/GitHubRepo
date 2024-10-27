@@ -38,8 +38,9 @@ def amount(transaction):
     logger.info('Конвертация прошла успешно')
     return response.json()["result"]
 
+file_path = r"D:\pyton\Курсы\pythonProjectN1\data\operations.json"
 
-def load_transactions(file_path):
+def load_transactions(file_path = file_path):
     # Проверяем, существует ли файл
     if not os.path.exists(file_path):
         logger.error(f'Файла {file_path} не существует')
@@ -63,4 +64,3 @@ def load_transactions(file_path):
         return []
 
 
-file_path = r"D:\pyton\Курсы\pythonProjectN1\data\operations.json"
