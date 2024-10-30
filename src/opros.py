@@ -53,7 +53,7 @@ def opros (trans):
             print("Некорректный ввод")
         else:
             if choice == "нет":
-                bool_choice[itranor] = False
+                bool_choice[-1] = False
             itranor += 1
             break
     while bool_choice[-1]:
