@@ -1,18 +1,20 @@
 import json
 import logging
 import os
-
+from pathlib import Path
 import requests
 from dotenv import load_dotenv
 
+
+# Настройка логирования
 logger = logging.getLogger('utils')
-file_handler = logging.FileHandler(r'D:\pyton\Курсы\pythonProjectN1\logs\utils.log', 'w')
+file_handler = logging.FileHandler(Path(__file__).parent.parent / 'logs/utils.log', 'w')
 file_formatter = logging.Formatter('%(asctime)s - %(name)s: %(message)s')
 file_handler.setFormatter(file_formatter)
 logger.addHandler(file_handler)
+logger.setLevel(logging.INFO)  # Устанавливаем уровень логирования
 load_dotenv()
 API_KEY = os.getenv("API_KEY")
-
 
 def amount(transaction):
     currency = transaction["operationAmount"]["currency"]["code"]
@@ -31,19 +33,20 @@ def amount(transaction):
 
     # Проверяем успешность запроса и наличие нужного поля в ответе
     if response.status_code != 200 or "result" not in response.json():
-        logger.error('Неудачный запрос с API')
+        logger.error('Неудачный запрос к API')
         raise RuntimeError("API request failed")
 
     # Возвращаем сконвертированную сумму
     logger.info('Конвертация прошла успешно')
     return response.json()["result"]
 
-file_path = r"D:\pyton\Курсы\pythonProjectN1\data\operations.json"
+# Используем относительный путь к файлу
+file_path = Path(__file__).parent / 'data/operations.json'
 
-def load_transactions(file_path = file_path):
+def load_transactions(file_path):
     # Проверяем, существует ли файл
-    if not os.path.exists(file_path):
-        logger.error(f'Файла {file_path} не существует')
+    if not file_path.exists():
+        logger.error(f'Файл {file_path} не существует')
         return []
 
     try:
@@ -58,9 +61,13 @@ def load_transactions(file_path = file_path):
             else:
                 logger.error('Данные не являются списком')
                 return []
-    except (json.JSONDecodeError, OSError):
+    except (json.JSONDecodeError, OSError) as e:
         # Обработка ошибок чтения и декодирования JSON
-        logger.error('Ошибка чтении данных')
+        logger.error(f'Ошибка чтения данных: {e}')
         return []
 
+# Устанавливаем рабочий каталог
+os.chdir(r'D:\pyton\Курсы\pythonProjectN1')
 
+# Пример использования функции с относительным путем
+file_path = Path('data/operations.json')

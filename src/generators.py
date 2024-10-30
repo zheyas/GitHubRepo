@@ -41,5 +41,6 @@ def card_number_generator(start: str, end: str) -> Generator[str, None, None]:
 def filter_by_currency(transactions, currency_code):
     """Фильтрует транзакции по заданной валюте."""
     for transaction in transactions:
-        if transaction.get("operationAmount", {}).get("currency", {}).get("code") == currency_code:
+        if transaction.get("currency_code") == currency_code or transaction.get("operationAmount", {}).get("currency", {}).get("code") == currency_code:
             yield transaction
+
