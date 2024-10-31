@@ -66,9 +66,3 @@ def opros (trans):
 
 #trans = src.loadformat.read_csv_financial_operations(src.loadformat.file_path)
 #print(opros(trans))
-
-
-
-
-
-
