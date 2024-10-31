@@ -1,4 +1,5 @@
 import re
+from collections import Counter
 
 
 def search_transactions(transactions, search_string):
@@ -12,16 +13,12 @@ def search_transactions(transactions, search_string):
 
 
 def count_operations_by_category(operations, categories):
-    # Инициализируем словарь для подсчета операций по категориям
-    category_count = {category: 0 for category in categories}
+    # Инициализируем Counter для подсчета операций по категориям
+    category_counter = Counter(
+        operation.get('description', '') for operation in operations if operation.get('description', '') in categories
+    )
 
-    # Проходим по всем операциям
-    for operation in operations:
-        # Получаем описание категории из операции
-        description = operation.get('description', '')
-
-        # Увеличиваем счетчик соответствующей категории
-        if description in categories:
-            category_count[description] += 1
+    # Создаем словарь с категориями и их количеством, включая категории с нулевым значением
+    category_count = {category: category_counter.get(category, 0) for category in categories}
 
     return category_count
