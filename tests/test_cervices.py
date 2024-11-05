@@ -2,7 +2,7 @@ from typing import Any, Dict, List
 
 import pytest
 
-from src.cervices import (
+from src.services import (
     analyze_cashback_profitability,
     investment_bank,
     search_personal_transfers,
