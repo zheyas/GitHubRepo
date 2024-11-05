@@ -1,12 +1,14 @@
 
 from datetime import datetime
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, List, Optional
+
 
 def filter_by_state(data: Optional[List[Dict[str, Any]]], state: str = 'EXECUTED') -> List[Dict[str, Any]]:
     if not data:
         print("Ошибка: данные отсутствуют или пусты. Проверьте источник данных.")
         return []
     return [item for item in data if item.get('state') == state]
+
 
 def sort_by_date(data: List[Dict[str, Any]], reverse: bool = True) -> List[Dict[str, Any]]:
     def parse_date(date_value: Any) -> Optional[datetime]:
@@ -40,6 +42,7 @@ def sort_by_date(data: List[Dict[str, Any]], reverse: bool = True) -> List[Dict[
         print("Отсортированные данные пусты или отсутствуют корректные даты.")
 
     return sorted_data
+
 
 def format_date(date_string: str) -> str:
     date_object = datetime.fromisoformat(date_string)

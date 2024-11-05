@@ -1,6 +1,5 @@
 import logging
 from pathlib import Path
-from openpyxl import Workbook
 
 # Указываем относительные пути
 logger = logging.getLogger('masks')
