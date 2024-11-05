@@ -1,10 +1,12 @@
-import src.loadformat
-import src.processing  # Импортируем модуль processing
-from pathlib import Path
 from datetime import datetime
-import src.opros
-import src.utils
+from pathlib import Path
+
+import src.cervices
+import src.loadformat
 import src.masks
+import src.opros
+import src.processing  # Импортируем модуль processing
+import src.utils
 
 
 def format_date(date_string: str) -> str:
@@ -33,9 +35,10 @@ def format_date(date_string: str) -> str:
 print("Привет! Добро пожаловать в программу работы с банковскими транзакциями.\nВыберите необходимый пункт меню:\n"
               "1. Получить информацию о транзакциях из JSON-файла\n"
               "2. Получить информацию о транзакциях из CSV-файла\n"
-              "3. Получить информацию о транзакциях из XLSX-файла")
+              "3. Получить информацию о транзакциях из XLSX-файла\n"
+            "4. Раздел Сервисы")
 c = int(input())
-if c not in [1, 2, 3]:
+if c not in [1, 2, 3, 4]:
     print(f"Модификации {c} не существует")
     exit()
 
@@ -151,5 +154,36 @@ match c:
             print(f"{format_date(i['date'])} {i['description']}")
             print(' '.join(t))
             print(f" {i['amount']} {i['currency_name']} ")
+    case 4:
+        print("Вы попали в раздел сервисы")
+        year = 0
+        month = 0
+        while True:
+            print("Введите год числом:")
+            year = int(input())
+            print("Введите месяц числом:")
+            month = int(input())
+            if (year<0) or (month not in range (1,12+1)):
+                print("Некорректный ввод")
+            else:
+                break
+        data = src.cervices.data
+        s = str(year)+'-'+str(month)
+        print(src.cervices.analyze_cashback_profitability(data,year,month))
+        limit = 0
+        while True:
+            print("Введите способ округления: 10, 50, 100:")
+            limit = int(input())
+            if limit in [10, 50, 100]:
+                break
+        print(src.cervices.investment_bank(s,data,limit))
+        print("Что изволите найти?")
+        q = input()
+        print(src.cervices.search_transactions(data,q))
+        print("Наёдем телефоны")
+        print(src.cervices.search_phone_transactions(data))
+        print("Наёдем переводы человекам")
+        print(src.cervices.search_personal_transfers(data))
+
     case _:
         print("До свидания!")

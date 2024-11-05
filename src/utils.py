@@ -2,9 +2,9 @@ import json
 import logging
 import os
 from pathlib import Path
+
 import requests
 from dotenv import load_dotenv
-
 
 # Настройка логирования
 logger = logging.getLogger('utils')
@@ -15,6 +15,7 @@ logger.addHandler(file_handler)
 logger.setLevel(logging.INFO)  # Устанавливаем уровень логирования
 load_dotenv()
 API_KEY = os.getenv("API_KEY")
+
 
 def amount(transaction):
     currency = transaction["operationAmount"]["currency"]["code"]
@@ -40,8 +41,10 @@ def amount(transaction):
     logger.info('Конвертация прошла успешно')
     return response.json()["result"]
 
+
 # Используем относительный путь к файлу
 file_path = Path(__file__).parent / 'data/operations.json'
+
 
 def load_transactions(file_path):
     # Проверяем, существует ли файл
@@ -65,6 +68,7 @@ def load_transactions(file_path):
         # Обработка ошибок чтения и декодирования JSON
         logger.error(f'Ошибка чтения данных: {e}')
         return []
+
 
 # Устанавливаем рабочий каталог
 os.chdir(r'D:\pyton\Курсы\pythonProjectN1')

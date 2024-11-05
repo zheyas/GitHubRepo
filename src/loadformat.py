@@ -1,7 +1,9 @@
 import csv
-import pandas as pd
-from pathlib import Path
 import os
+from pathlib import Path
+
+import pandas as pd
+
 
 def read_xlsx_financial_operations(file_path):
     """
@@ -66,8 +68,10 @@ def read_csv_financial_operations(file_path):
         print(f"Произошла ошибка: {e}")
         return []
 
+
 # Устанавливаем рабочий каталог
 os.chdir(r'D:\pyton\Курсы\pythonProjectN1')
+
 
 # Указываем относительные пути
 file_path_xlsx = Path('data/transactions_excel.xlsx')
