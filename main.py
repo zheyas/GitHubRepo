@@ -1,14 +1,14 @@
 from datetime import datetime
-from pathlib import Path
 
-import src.services
 import src.loadformat
 import src.masks
 import src.opros
 import src.processing  # Импортируем модуль processing
-import src.utils
 import src.reports
+import src.services
+import src.utils
 import src.views
+
 
 def is_valid_date(year: int, month: int, day: int) -> bool:
     try:
@@ -41,17 +41,17 @@ def format_date(date_string: str) -> str:
     # Format the date to the desired format
     return date_object.strftime("%d.%m.%Y")
 
-print("Привет! Добро пожаловать в программу работы с банковскими транзакциями.\nВыберите необходимый пункт меню:\n"
-              "1. Получить информацию о транзакциях из JSON-файла\n"
-              "2. Получить информацию о транзакциях из CSV-файла\n"
-              "3. Получить информацию о транзакциях из XLSX-файла\n"
-                "4. Раздел Сервисы\n"
-                "5. Отёты\n"
-                "6. Веб-страницы")
+
+print("Привет! Добро пожаловать в программу работы с банковскими транзакциями."
+      "\nВыберите необходимый пункт меню:\n1. Получить информацию о транзакциях из JSON-файла\n"
+        "2. Получить информацию о транзакциях из CSV-файла\n"
+        "3. Получить информацию о транзакциях из XLSX-файла\n"
+        "4. Раздел Сервисы\n 5. Отёты\n6. Веб-страницы")
 c = int(input())
 if c not in [1, 2, 3, 4, 5, 6]:
     print(f"Модификации {c} не существует")
     exit()
+
 
 match c:
     case 1:
@@ -174,23 +174,23 @@ match c:
             year = int(input())
             print("Введите месяц числом:")
             month = int(input())
-            if (year<0) or (month not in range (1,12+1)):
+            if (year < 0) or (month not in range(1, 12+1)):
                 print("Некорректный ввод")
             else:
                 break
         data = src.cervices.data
-        s = str(year)+'-'+str(month)
-        print(src.cervices.analyze_cashback_profitability(data,year,month))
+        s = str(year) + '-' + str(month)
+        print(src.cervices.analyze_cashback_profitability(data, year, month))
         limit = 0
         while True:
             print("Введите способ округления: 10, 50, 100:")
             limit = int(input())
             if limit in [10, 50, 100]:
                 break
-        print(src.cervices.investment_bank(s,data,limit))
+        print(src.cervices.investment_bank(s, data, limit))
         print("Что изволите найти?")
         q = input()
-        print(src.cervices.search_transactions(data,q))
+        print(src.cervices.search_transactions(data, q))
         print("Наёдем телефоны")
         print(src.cervices.search_phone_transactions(data))
         print("Наёдем переводы человекам")
@@ -245,8 +245,10 @@ match c:
                 break
             break
         print(f"Курсы валют на сегодня: {src.views.get_converted_amounts(src.views.currency_api_key,1)}")
-        print(f"Цены на акции в тот самый день: {src.views.fetch_sp500_stock_prices(src.views.stock_api_key, src.views.sp500_tickers)}")
-        print(f"Финальный отчёт за период: {src.views.generate_financial_report(str(d) + '.' + str(m) + '.' + str(y), chose)}")
+        print(f"Цены на акции в тот самый день:"
+              f" {src.views.fetch_sp500_stock_prices(src.views.stock_api_key, src.views.sp500_tickers)}")
+        print(f"Финальный отчёт за период: "
+              f"{src.views.generate_financial_report(str(d) + '.' + str(m) + '.' + str(y), chose)}")
 
     case _:
         print("До свидания!")

@@ -1,11 +1,12 @@
 import json
-from urllib.request import urlopen
-import certifi
-import requests
 import os
 import ssl
 from datetime import datetime, timedelta
+from urllib.request import urlopen
+
+import certifi
 import pandas as pd
+import requests
 from dotenv import load_dotenv
 
 # Загрузка переменных окружения из .env файла
@@ -37,8 +38,10 @@ def generate_financial_report(target_date, interval='M'):
         df = pd.read_excel(file_path)
         df['Дата операции'] = pd.to_datetime(df['Дата операции'], format="%d.%m.%Y %H:%M:%S")
         df_filtered = df[(df['Дата операции'] >= start_date) & (df['Дата операции'] <= end_date)]
-        expenses = df_filtered[df_filtered['Сумма операции'] < 0].groupby('Категория')['Сумма операции'].sum().to_dict()
-        income = df_filtered[df_filtered['Сумма операции'] > 0].groupby('Категория')['Сумма операции'].sum().to_dict()
+        expenses = df_filtered[df_filtered['Сумма операции'] < 0].groupby('Категория')
+        ['Сумма операции'].sum().to_dict()
+        income = df_filtered[df_filtered['Сумма операции'] > 0].groupby('Категория')
+        ['Сумма операции'].sum().to_dict()
         expenses = {k: abs(v) for k, v in expenses.items()}
         return expenses, income
 
@@ -92,7 +95,8 @@ def fetch_sp500_stock_prices(api_key, tickers):
 
 # Функция для конвертации валют
 def fetch_converted_amount(api_key, amount_value, from_currency, to_currency='RUB'):
-    url = f"https://api.apilayer.com/exchangerates_data/convert?to={to_currency}&from={from_currency}&amount={amount_value}"
+    url = (f"https://api.apilayer.com/exchangerates_data/convert?to={to_currency}&"
+           f"from={from_currency}&amount={amount_value}")
     headers = {"apikey": api_key}
     response = requests.get(url, headers=headers)
     if response.status_code == 200:
@@ -110,5 +114,5 @@ def get_converted_amounts(api_key, amount_value):
     response = {"USD": usd_to_rub, "EUR": eur_to_rub}
     return response
 
+
 sp500_tickers = ["AAPL", "MSFT", "GOOGL", "AMZN", "FB"]
-# Пример использования

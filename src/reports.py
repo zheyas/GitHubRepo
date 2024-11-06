@@ -1,8 +1,9 @@
 import os
-import pandas as pd
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import Any, Dict, List
+
+import pandas as pd
 
 # Указываем путь к файлу
 file_path_xlsx = Path('data/operations.xlsx')
@@ -61,6 +62,3 @@ df_transactions = pd.DataFrame(data)
 # Вызов функции для расчета средних трат
 result = average_spending_by_day_type(df_transactions, datetime(2021, 12, 28))
 print(result)
-
-
-

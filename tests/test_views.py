@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-import pytest
-from unittest.mock import patch, Mock
 import json
+from unittest.mock import Mock, patch
+
 import pandas as pd
-from datetime import datetime
-from src.views import generate_financial_report, fetch_sp500_stock_prices, fetch_converted_amount
+
+from src.views import fetch_converted_amount, fetch_sp500_stock_prices, generate_financial_report
+
 
 # Тестирование функции generate_financial_report
 @patch("src.views.pd.read_excel")
@@ -34,6 +35,7 @@ def test_generate_financial_report(mock_read_excel):
     assert report_data["Расходы"]["Общая сумма"] == 0  # Проверка на общую сумму расходов
     assert report_data["Поступления"]["Общая сумма"] == 0  # Проверка на общую сумму поступлений
 
+
 # Тестирование функции fetch_sp500_stock_prices
 @patch("src.views.urlopen")
 def test_fetch_sp500_stock_prices(mock_urlopen):
@@ -45,6 +47,7 @@ def test_fetch_sp500_stock_prices(mock_urlopen):
     # Проверка вызова функции
     prices = fetch_sp500_stock_prices("fake_api_key", ["AAPL"])
     assert prices == {"AAPL": 150.0}
+
 
 # Тестирование функции fetch_converted_amount
 @patch("src.views.requests.get")
