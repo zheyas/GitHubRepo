@@ -7,6 +7,15 @@ import src.masks
 import src.opros
 import src.processing  # Импортируем модуль processing
 import src.utils
+import src.reports
+import src.views
+
+def is_valid_date(year: int, month: int, day: int) -> bool:
+    try:
+        datetime(year, month, day)
+        return True
+    except ValueError:
+        return False
 
 
 def format_date(date_string: str) -> str:
@@ -36,9 +45,11 @@ print("Привет! Добро пожаловать в программу ра�
               "1. Получить информацию о транзакциях из JSON-файла\n"
               "2. Получить информацию о транзакциях из CSV-файла\n"
               "3. Получить информацию о транзакциях из XLSX-файла\n"
-            "4. Раздел Сервисы")
+                "4. Раздел Сервисы\n"
+                "5. Отёты\n"
+                "6. Веб-страницы")
 c = int(input())
-if c not in [1, 2, 3, 4]:
+if c not in [1, 2, 3, 4, 5, 6]:
     print(f"Модификации {c} не существует")
     exit()
 
@@ -184,6 +195,58 @@ match c:
         print(src.cervices.search_phone_transactions(data))
         print("Наёдем переводы человекам")
         print(src.cervices.search_personal_transfers(data))
+    case 5:
+        y = 0
+        m = 0
+        d = 0
+        print("Вы попали в раздел Отчёты\n")
+        while True:
+            print("Введите год")
+            y = int(input())
+            print("Введите месяц")
+            m = int(input())
+            print("Введите день")
+            d = int(input())
+            if (is_valid_date(y, m, d)):
+                break
+            else:
+                print("Такой даты не существует")
+        print(src.reports.average_spending_by_day_type(src.reports.df_transactions, datetime(y, m, d)))
+    case 6:
+        print("События приветствуют вас")
+        chose = "M"
+        y = 0
+        m = 0
+        d = 0
+        while True:
+            print("Введите год")
+            y = int(input())
+            print("Введите месяц")
+            m = int(input())
+            print("Введите день")
+            d = int(input())
+            if not (is_valid_date(y, m, d)):
+                print("Такой даты не существует")
+            else:
+                while True:
+                    c = ""
+                    print("Просматриваем по умолчанию месяц. Будем менять? да/нет")
+                    c = input()
+                    c = c.lower()
+                    if c == "да":
+                        print("Какой период? Год/месяц/день? (Y, M, D)")
+                        chose = input().upper()
+                        break
+                    elif c == "нет":
+                        break
+                    else:
+                        print("Повторите")
+
+                break
+            break
+        print(f"Курсы валют на сегодня: {src.views.get_converted_amounts(src.views.currency_api_key,1)}")
+        print(f"Цены на акции в тот самый день: {src.views.fetch_sp500_stock_prices(src.views.stock_api_key, src.views.sp500_tickers)}")
+        print(f"Финальный отчёт за период: {src.views.generate_financial_report(str(d) + '.' + str(m) + '.' + str(y), chose)}")
 
     case _:
         print("До свидания!")
