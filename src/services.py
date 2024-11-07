@@ -8,11 +8,11 @@ from typing import Any, Dict, List
 
 import pandas as pd
 
-# Указываем относительный путь к файлу данных
-file_path_xlsx = Path('data/operations.xlsx')
+# Получаем путь к текущему файлу и переходим на уровень выше, чтобы стать в корень проекта
+base_path = Path(__file__).resolve().parent.parent
 
-os.chdir(r'D:\pyton\Курсы\pythonProjectN1')
-
+# Относительный путь к файлу в папке data
+file_path_xlsx = base_path / 'data' / 'operations.xlsx'
 
 def read_xlsx_financial_operations(file_path=file_path_xlsx) -> List[Dict[str, Any]]:
     """Читаем файл Excel и определяем нужные столбцы"""

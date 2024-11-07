@@ -5,11 +5,11 @@ from typing import Any, Dict, List
 
 import pandas as pd
 
-# Указываем путь к файлу
-file_path_xlsx = Path('data/operations.xlsx')
+# Получаем путь к текущему файлу и переходим на уровень выше, чтобы стать в корень проекта
+base_path = Path(__file__).resolve().parent.parent
 
-# Изменяем текущую директорию
-os.chdir(r'D:\pyton\Курсы\pythonProjectN1')
+    # Относительный путь к файлу в папке data
+file_path_xlsx = base_path / 'data' / 'operations.xlsx'
 
 
 def read_xlsx_financial_operations(file_path=file_path_xlsx) -> List[Dict[str, Any]]:
@@ -58,7 +58,3 @@ def average_spending_by_day_type(df: pd.DataFrame, date: datetime = None) -> dic
 # Основной блок кода
 data = read_xlsx_financial_operations(file_path_xlsx)
 df_transactions = pd.DataFrame(data)
-
-# Вызов функции для расчета средних трат
-result = average_spending_by_day_type(df_transactions, datetime(2021, 12, 28))
-print(result)
