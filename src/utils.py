@@ -27,10 +27,11 @@ def amount(transaction):
         return amount_value
 
     # Если валюта не RUB, отправляем запрос к API для конвертации
-    url = f"https://api.apilayer.com/exchangerates_data/convert?to=RUB&from={currency}&amount={amount_value}"
+    url = "https://api.apilayer.com/exchangerates_data/convert"
     headers = {"apikey": API_KEY}
+    params = {"to": "RUB", "from": currency, "amount": amount_value}
 
-    response = requests.get(url, headers=headers)
+    response = requests.get(url, headers=headers, params=params)
 
     # Проверяем успешность запроса и наличие нужного поля в ответе
     if response.status_code != 200 or "result" not in response.json():
@@ -42,9 +43,12 @@ def amount(transaction):
     return response.json()["result"]
 
 
-# Используем относительный путь к файлу
-file_path = Path(__file__).parent / 'data/operations.json'
 
+# Получаем путь к текущему файлу и переходим на уровень выше, чтобы стать в корень проекта
+base_path = Path(__file__).resolve().parent.parent
+
+# Относительный путь к файлу в папке data
+file_path = base_path / 'data' / 'operations.json'
 
 def load_transactions(file_path):
     # Проверяем, существует ли файл
@@ -68,10 +72,3 @@ def load_transactions(file_path):
         # Обработка ошибок чтения и декодирования JSON
         logger.error(f'Ошибка чтения данных: {e}')
         return []
-
-
-# Устанавливаем рабочий каталог
-os.chdir(r'D:\pyton\Курсы\pythonProjectN1')
-
-# Пример использования функции с относительным путем
-file_path = Path('data/operations.json')
