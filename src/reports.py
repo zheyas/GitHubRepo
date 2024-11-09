@@ -1,22 +1,32 @@
-import os
+import logging
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import pandas as pd
 
-# Получаем путь к текущему файлу и переходим на уровень выше, чтобы стать в корень проекта
+# Настройка базового уровня логирования
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+
+# Получаем путь к корню проекта
 base_path = Path(__file__).resolve().parent.parent
 
-    # Относительный путь к файлу в папке data
-file_path_xlsx = base_path / 'data' / 'operations.xlsx'
+# Относительный путь к файлу данных
+file_path_xlsx = Path(__file__).resolve().parent.parent / 'data' / 'operations.xlsx'
 
 
 def read_xlsx_financial_operations(file_path=file_path_xlsx) -> List[Dict[str, Any]]:
-    """Читаем файл Excel и определяем нужные столбцы"""
-    df = pd.read_excel(file_path, dtype=str)
-    transactions = []
+    """Читаем файл Excel и определяем нужные столбцы."""
+    try:
+        df = pd.read_excel(file_path, dtype=str)
+    except FileNotFoundError:
+        logging.error(f"Файл не найден по пути: {file_path}")
+        return []
+    except Exception as e:
+        logging.error(f"Ошибка при чтении файла: {e}")
+        return []
 
+    transactions = []
     for _, row in df.iterrows():
         transaction = {
             'Дата операции': row['Дата операции'],
@@ -30,31 +40,64 @@ def read_xlsx_financial_operations(file_path=file_path_xlsx) -> List[Dict[str, A
     return transactions
 
 
-def average_spending_by_day_type(df: pd.DataFrame, date: datetime = None) -> dict:
-    if date is None:
-        date = datetime.now()
-
-    # Определяем дату начала для фильтрации за последние три месяца
+def spending_by_workday(transactions: pd.DataFrame, date: Optional[str] = None) -> pd.DataFrame:
+    """Вычисляет средние траты за выходные и будние дни за последние три месяца."""
+    date = datetime.strptime(date, "%Y-%m-%d") if date else datetime.now()
     three_months_ago = date - timedelta(days=90)
 
-    # Преобразуем столбец 'Дата операции' в формат datetime с заданным форматом
-    df['Дата операции'] = pd.to_datetime(df['Дата операции'], format='%d.%m.%Y %H:%M:%S', errors='coerce')
+    # Преобразование 'Дата операции' в формат datetime
+    transactions['Дата операции'] = pd.to_datetime(transactions['Дата операции'],
+                                                   format='%d.%m.%Y %H:%M:%S', errors='coerce')
 
-    # Фильтрация данных за последние три месяца
-    recent_data = df[(df['Дата операции'] >= three_months_ago) & (df['Дата операции'] <= date)]
+    # Фильтрация транзакций за последние три месяца и обработка пустых значений
+    recent_data = transactions[(transactions['Дата операции'] >= three_months_ago) &
+                               (transactions['Дата операции'] <= date)]
     recent_data = recent_data.dropna(subset=['Дата операции', 'Сумма операции'])
-    recent_data['Сумма операции'] = recent_data['Сумма операции'].astype(float)
-    recent_data['is_weekend'] = recent_data['Дата операции'].dt.dayofweek >= 5
+    recent_data['Сумма операции'] = pd.to_numeric(recent_data['Сумма операции'], errors='coerce')
 
-    avg_weekend_spending = recent_data[recent_data['is_weekend']]['Сумма операции'].mean()
-    avg_weekday_spending = recent_data[~recent_data['is_weekend']]['Сумма операции'].mean()
+    # Определение типа дня и вычисление средних трат
+    recent_data['Тип дня'] = (recent_data['Дата операции'].dt.dayofweek.
+                              apply(lambda x: 'Выходной день' if x >= 5 else 'Рабочий день'))
+    result = (recent_data.groupby('Тип дня')['Сумма операции'].mean().reset_index().
+              rename(columns={'Сумма операции': 'Средние траты'}))
 
-    return {
-        "Средние траты за выходной день": float(avg_weekend_spending) if pd.notna(avg_weekend_spending) else 0,
-        "Средние траты за рабочий день": float(avg_weekday_spending) if pd.notna(avg_weekday_spending) else 0
-    }
+    return result
+
+
+def spending_by_category(transactions: pd.DataFrame, category: str, date: Optional[str] = None) -> pd.DataFrame:
+    """Возвращает траты по заданной категории за последние три месяца от переданной даты."""
+    try:
+        date = datetime.strptime(date, "%Y-%m-%d") if date else datetime.now()
+    except ValueError:
+        logging.error("Некорректный формат даты. Ожидается 'YYYY-MM-DD'.")
+        return pd.DataFrame()
+
+    # Дата начала периода - три месяца назад
+    three_months_ago = date - timedelta(days=90)
+    transactions['Дата операции'] = pd.to_datetime(transactions['Дата операции'], format='%d.%m.%Y %H:%M:%S',
+                                                   errors='coerce')
+
+    # Фильтрация по дате и категории
+    filtered_data = transactions[(transactions['Дата операции'] >= three_months_ago) &
+                                 (transactions['Дата операции'] <= date) &
+                                 (transactions['Категория'] == category)]
+
+    if filtered_data.empty:
+        logging.warning(f"Нет транзакций по категории '{category}' за указанный период.")
+        return pd.DataFrame()
+
+    # Подсчёт общей суммы трат по категории
+    total_spending = filtered_data['Сумма операции'].astype(float).sum()
+    result = pd.DataFrame({'Категория': [category], 'Общие траты': [total_spending]})
+    logging.info(f"Общая сумма трат по категории '{category}' за последние три месяца: {total_spending}")
+
+    return result
 
 
 # Основной блок кода
-data = read_xlsx_financial_operations(file_path_xlsx)
+data = read_xlsx_financial_operations()
 df_transactions = pd.DataFrame(data)
+
+# Пример вызова функций
+# print(spending_by_workday(df_transactions))
+# print(spending_by_category(df_transactions, 'Категория_Пример'))

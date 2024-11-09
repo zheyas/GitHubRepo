@@ -1,11 +1,11 @@
 from datetime import datetime
+from pathlib import Path
 
 import src.loadformat
 import src.masks
 import src.opros
 import src.processing  # Импортируем модуль processing
 import src.reports
-import src.services
 import src.utils
 import src.views
 
@@ -42,11 +42,11 @@ def format_date(date_string: str) -> str:
     return date_object.strftime("%d.%m.%Y")
 
 
-print("Привет! Добро пожаловать в программу работы с банковскими транзакциями."
-      "\nВыберите необходимый пункт меню:\n1. Получить информацию о транзакциях из JSON-файла\n"
-        "2. Получить информацию о транзакциях из CSV-файла\n"
-        "3. Получить информацию о транзакциях из XLSX-файла\n"
-        "4. Раздел Сервисы\n 5. Отёты\n6. Веб-страницы")
+print("Привет! Добро пожаловать в программу работы с банковскими транзакциями.\n"
+      "Выберите необходимый пункт меню:\n1. Получить информацию о транзакциях из JSON-файла\n"
+      "2. Получить информацию о транзакциях из CSV-файла\n"
+      "3. Получить информацию о транзакциях из XLSX-файла\n"
+      "4. Раздел Сервисы\n 5. Отёты\n6. Веб-страницы")
 c = int(input())
 if c not in [1, 2, 3, 4, 5, 6]:
     print(f"Модификации {c} не существует")
@@ -88,9 +88,9 @@ match c:
                 print(f"{' '.join(f)} -> {' '.join(t)}")
                 print(f" {i['operationAmount']['amount']} {i['operationAmount']['currency']['name']} ")
         else:
-                print(f"{format_date(i['date'])} {i['description']}")
-                print(' '.join(t))
-                print(f" {i['operationAmount']['amount']} {i['operationAmount']['currency']['name']} ")
+            print(f"{format_date(i['date'])} {i['description']}")
+            print(' '.join(t))
+            print(f" {i['operationAmount']['amount']} {i['operationAmount']['currency']['name']} ")
 
     case 2:
         while True:
@@ -244,11 +244,34 @@ match c:
 
                 break
             break
-        print(f"Курсы валют на сегодня: {src.views.get_converted_amounts(src.views.currency_api_key,1)}")
-        print(f"Цены на акции в тот самый день:"
-              f" {src.views.fetch_sp500_stock_prices(src.views.stock_api_key, src.views.sp500_tickers)}")
-        print(f"Финальный отчёт за период: "
-              f"{src.views.generate_financial_report(str(d) + '.' + str(m) + '.' + str(y), chose)}")
+        dat = str(d) + '.' + str(m) + '.' + str(y)
+        print(src.views.get_greeting())
+        start_date, end_date = src.views.generate_date_range(dat, chose)
+        file_path = Path(__file__).resolve().parent / "data" / "operations.json"
 
+        # Получение данных о тратах и доходах из файла
+        expenses, income, operations = src.utils.get_expenses_and_income_from_file(file_path, start_date, end_date)
+
+        # Вывод на экран
+        print(f"Траты: {expenses}" + f"Доходы: {income}")
+
+        # Получаем сводку по картам
+        card_summary = src.views.get_card_summary(operations)
+        print("Сводка по картам:", card_summary)
+
+        # Получаем топ-5 транзакций
+        top_transactions = src.views.get_top_transactions(operations)
+        print("Топ-5 транзакций:", top_transactions)
+
+        # Получаем стоимость акций для нескольких тикеров
+        tickers = ["AAPL", "AMZN", "GOOGL", "MSFT", "TSLA"]
+        stock_prices = src.views.get_stock_prices_for_multiple_tickers(src.views.stock_api_key, tickers)
+        print("Стоимость акций:", stock_prices)
+
+        exchange_rates = ((f"Евро {src.utils.fetch_converted_amount(src.views.currency_api_key, 1, 'EUR')} "
+                          f"рублей\n") +
+                          (f"Доллар {src.utils.fetch_converted_amount(src.views.currency_api_key, 1, 'USD')}"
+                           f" рублей\n"))
+        print(exchange_rates)
     case _:
         print("До свидания!")
