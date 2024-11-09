@@ -21,12 +21,13 @@ def get_mask_card_number(card_number: str) -> str:
     Возвращает:
     str: Маскированный номер карты в формате 'XXXX XXXX XXXX XXXX'.
     """
-    if len(card_number) < 16:
-        logger.error("Номер карты должен содержать 16 цифр.")
-        raise ValueError("Номер карты должен содержать 16 цифр.")
+    if len(card_number) != 16 or not card_number.isdigit():
+        logger.error("Номер карты должен содержать 16 цифр и содержать только цифры.")
+        raise ValueError("Номер карты должен содержать 16 цифр и содержать только цифры.")
 
-    logger.info('Успешно замаскирован номер карты')
-    return f"XXXX XXXX XXXX {card_number[-4:]}"
+    masked_number = f"XXXX XXXX XXXX {card_number[-4:]}"
+    logger.info(f'Номер карты успешно замаскирован: {masked_number}')
+    return masked_number
 
 
 def get_mask_account(account_number: str) -> str:
@@ -39,11 +40,13 @@ def get_mask_account(account_number: str) -> str:
     Возвращает:
     str: Маскированный номер счёта в формате '****XXXX'.
     """
-    if len(account_number) < 4:
-        logger.error("Номер счета должен содержать не менее 4 символов.")
-        raise ValueError("Номер счета должен содержать не менее 4 символов.")
+    if len(account_number) < 4 or not account_number.isdigit():
+        logger.error("Номер счета должен содержать не менее 4 символов и содержать только цифры.")
+        raise ValueError("Номер счета должен содержать не менее 4 символов и содержать только цифры.")
 
-    return "****" + account_number[-4:]
+    masked_account = "****" + account_number[-4:]
+    logger.info(f'Номер счета успешно замаскирован: {masked_account}')
+    return masked_account
 
 
 def mask_data_from_json(data: list) -> list:

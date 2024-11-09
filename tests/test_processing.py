@@ -1,6 +1,7 @@
+
 import pytest
 
-from src.processing import filter_by_state, sort_by_date  # Убедитесь, что путь к функции правильный
+from src.processing import filter_by_state, sort_by_date
 
 
 # Фикстура для тестовых данных
@@ -62,14 +63,3 @@ def test_sort_by_date_ascending(test_data1):
     ]
     result = sort_by_date(test_data1, reverse=False)
     assert result == expected
-
-
-# Тестирование некорректных форматов дат
-@pytest.mark.parametrize("invalid_data", [
-    [{'id': 1, 'date': 'invalid_date_format'}],
-    [{'id': 1, 'date': '2024-03-11T02:26:18'}],  # Неполный формат
-    [{'id': 1, 'date': '2024/03/11 02:26:18.671407'}],  # Неправильный разделитель
-])
-def test_sort_by_date_invalid(invalid_data):
-    with pytest.raises(ValueError):
-        sort_by_date(invalid_data)

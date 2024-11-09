@@ -1,37 +1,92 @@
-
-from datetime import datetime
-from unittest.mock import patch
+import os
+from pathlib import Path
 
 import pandas as pd
-import pytest
 
-from src.reports import average_spending_by_day_type, read_xlsx_financial_operations
-
-EXAMPLE_DATA = [
-    {'Дата операции': '01.01.2024 12:00:00', 'Категория': 'Shopping', 'Кэшбэк': '5',
-     'Сумма операции': '100.0', 'Описание': 'Clothes'},
-    {'Дата операции': '02.01.2024 14:30:00', 'Категория': 'Food', 'Кэшбэк': '2',
-     'Сумма операции': '50.0', 'Описание': 'Groceries'},
-    {'Дата операции': '03.01.2024 18:00:00', 'Категория': 'Transport', 'Кэшбэк': '0',
-     'Сумма операции': '20.0', 'Описание': 'Bus Ticket'},
-]
+from src.reports import read_xlsx_financial_operations, spending_by_category, spending_by_workday
 
 
-@pytest.fixture
-def example_dataframe():
-    return pd.DataFrame(EXAMPLE_DATA)
-
-
+# Тестирование чтения данных из файла
 def test_read_xlsx_financial_operations():
-    with patch('pandas.read_excel', return_value=pd.DataFrame(EXAMPLE_DATA)):
-        result = read_xlsx_financial_operations(file_path='dummy_path.xlsx')
-        assert len(result) == 3
-        assert result[0]['Категория'] == 'Shopping'
-        assert result[1]['Кэшбэк'] == '2'
-        assert result[2]['Сумма операции'] == '20.0'
+    # Создаем тестовый файл Excel
+    test_file = Path(__file__).resolve().parent.parent / 'data' / 'test.xlsx'
+    if test_file.exists():
+        os.remove(test_file)
+
+    test_data = [
+        {'Дата операции': '01.10.2024 10:00:00', 'Категория': 'Продукты', 'Кэшбэк': '10', 'Сумма операции':
+            '100', 'Описание': 'Тест1'},
+        {'Дата операции': '05.10.2024 12:00:00', 'Категория': 'Транспорт', 'Кэшбэк': '5', 'Сумма операции':
+            '50', 'Описание': 'Тест2'},
+                ]
+    df = pd.DataFrame(test_data)
+    df.to_excel(test_file, index=False)
+
+    # Проверка, что данные правильно считываются
+    data = read_xlsx_financial_operations(test_file)
+    assert len(data) == 2
+    assert data[0]['Категория'] == 'Продукты'
+    assert data[1]['Сумма операции'] == '50'
+
+    # Удаление тестового файла
+    os.remove(test_file)
 
 
-def test_average_spending_by_day_type(example_dataframe):
-    result = average_spending_by_day_type(example_dataframe, datetime(2024, 1, 4))
-    assert result["Средние траты за выходной день"] >= 0
-    assert result["Средние траты за рабочий день"] >= 0
+# Тестирование функции `spending_by_workday`
+def test_spending_by_workday():
+    data = [
+        {'Дата операции': '01.10.2024 10:00:00', 'Категория': 'Продукты', 'Кэшбэк': '10', 'Сумма операции':
+            '100', 'Описание': 'Тест1'},
+        {'Дата операции': '05.10.2024 12:00:00', 'Категория': 'Транспорт', 'Кэшбэк': '5', 'Сумма операции':
+            '50', 'Описание': 'Тест2'},
+        {'Дата операции': '07.10.2024 14:00:00', 'Категория': 'Продукты', 'Кэшбэк': '5', 'Сумма операции':
+            '30', 'Описание': 'Тест3'},
+    ]
+    df = pd.DataFrame(data)
+    df['Дата операции'] = pd.to_datetime(df['Дата операции'])
+
+    result = spending_by_workday(df)
+
+    assert 'Средние траты' in result.columns
+    assert len(result) == 0  # Рабочие и выходные дни
+    assert result['Средние траты'].sum() == 0.0
+
+
+# Тестирование функции `spending_by_category`
+def test_spending_by_category():
+    data = [
+        {'Дата операции': '01.10.2024 10:00:00', 'Категория': 'Продукты', 'Кэшбэк': '10', 'Сумма операции':
+            '100', 'Описание': 'Тест1'},
+        {'Дата операции': '05.10.2024 12:00:00', 'Категория': 'Транспорт', 'Кэшбэк': '5', 'Сумма операции':
+            '50', 'Описание': 'Тест2'},
+        {'Дата операции': '07.10.2024 14:00:00', 'Категория': 'Продукты', 'Кэшбэк': '5', 'Сумма операции':
+            '30', 'Описание': 'Тест3'},
+    ]
+    df = pd.DataFrame(data)
+    df['Дата операции'] = pd.to_datetime(df['Дата операции'])
+
+    # Тест с категорией, которая существует
+    result = spending_by_category(df, 'Продукты')
+    assert 'Категория' not in result.columns
+
+    # Тест с категорией, которой нет
+    result_empty = spending_by_category(df, 'Электроника')
+    assert result_empty.empty
+
+
+# Тестирование неправильной даты в функции `spending_by_category`
+def test_spending_by_category_invalid_date():
+    data = [
+        {'Дата операции': '01.10.2024 10:00:00', 'Категория': 'Продукты', 'Кэшбэк': '10', 'Сумма операции':
+            '100', 'Описание': 'Тест1'},
+        {'Дата операции': '05.10.2024 12:00:00', 'Категория': 'Транспорт', 'Кэшбэк': '5', 'Сумма операции':
+            '50', 'Описание': 'Тест2'},
+        {'Дата операции': '07.10.2024 14:00:00', 'Категория': 'Продукты', 'Кэшбэк': '5', 'Сумма операции':
+            '30', 'Описание': 'Тест3'},
+    ]
+    df = pd.DataFrame(data)
+    df['Дата операции'] = pd.to_datetime(df['Дата операции'])
+
+    # Неверный формат даты
+    result = spending_by_category(df, 'Продукты', date='2024-10-32')
+    assert result.empty  # Должен вернуть пустой DataFrame

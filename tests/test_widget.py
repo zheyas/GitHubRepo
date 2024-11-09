@@ -1,3 +1,6 @@
+
+# tests/test_widget.py
+
 import pytest
 
 from src.widget import get_date, mask_account_card
@@ -5,11 +8,11 @@ from src.widget import get_date, mask_account_card
 
 # Тесты для функции mask_account_card
 @pytest.mark.parametrize("input_str, expected_output", [
-    ("Visa Platinum 7000792289606361", "visa platinum XXXX XX22 **** 6361"),
-    ("Maestro 7000792289606361", "maestro XXXX XX22 **** 6361"),
-    ("Счет 73654108430135874305", "счет **4305"),
-    ("Visa 4000123456789010", "visa XXXX XX34 **** 9010"),
-    ("Счет 1234", "счет **1234"),
+    ("Visa Platinum 7000792289606361", "visa platinum XXXX XXXX XXXX 6361"),
+    ("Maestro 7000792289606361", "maestro XXXX XXXX XXXX 6361"),
+    ("Счет 73654108430135874305", "счет ****4305"),
+    ("Visa 4000123456789010", "visa XXXX XXXX XXXX 9010"),
+    ("Счет 1234", "счет ****1234"),
 ])
 def test_mask_account_card_valid(input_str, expected_output):
     """Тестирование корректной работы маскировки карт и счетов."""

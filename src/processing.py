@@ -11,7 +11,7 @@ def filter_by_state(data: Optional[List[Dict[str, Any]]], state: str = 'EXECUTED
 
 
 def sort_by_date(data: List[Dict[str, Any]], reverse: bool = True) -> List[Dict[str, Any]]:
-    def parse_date(date_value: Any) -> Optional[datetime]:
+    def parse_date(date_value: Any) -> datetime:
         if isinstance(date_value, str):
             for fmt in ('%Y-%m-%dT%H:%M:%S.%f', '%Y-%m-%dT%H:%M:%S', '%Y-%m-%d'):
                 try:
@@ -19,27 +19,20 @@ def sort_by_date(data: List[Dict[str, Any]], reverse: bool = True) -> List[Dict[
                 except ValueError:
                     continue
             if date_value.endswith('Z'):
-                date_value = date_value[:-1]
                 try:
-                    return datetime.strptime(date_value, '%Y-%m-%dT%H:%M:%S')
+                    return datetime.strptime(date_value[:-1], '%Y-%m-%dT%H:%M:%S')
                 except ValueError:
                     pass
-            print(f"Неподдерживаемый формат даты: {date_value}")
-            return None
-        else:
-            print(f"Предупреждение: дата не в строковом формате ({date_value}), пропущена.")
-            return None
+            # Выбросить ошибку, если все форматы провалились
+            raise ValueError(f"Invalid date format: {date_value}")
+        # Выбросить ошибку, если дата не строка
+        raise ValueError(f"Date is not a string: {date_value}")
 
-    filtered_data = [item for item in data if 'date' in item and item['date']]
     sorted_data = sorted(
-        filtered_data,
-        key=lambda x: parse_date(x['date']) or datetime.min,
+        data,
+        key=lambda x: parse_date(x['date']),
         reverse=reverse
     )
-
-    # Отладочная информация
-    if not sorted_data:
-        print("Отсортированные данные пусты или отсутствуют корректные даты.")
 
     return sorted_data
 

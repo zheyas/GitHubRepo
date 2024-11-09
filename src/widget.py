@@ -25,10 +25,10 @@ def mask_account_card(info: str) -> str:
     if ("visa" in card_or_account_type or "maestro" in card_or_account_type) and (len(number) != 16):
         return 'Invalid input format'
     if "visa" in card_or_account_type or "maestro" in card_or_account_type:
-        masked_number = get_mask_card_number(int(number))
+        masked_number = get_mask_card_number(number)  # Передаем строку
         return f"{card_or_account_type} {masked_number}"
     elif "счет" in card_or_account_type:
-        masked_number = get_mask_account(int(number))
+        masked_number = get_mask_account(number)  # Передаем строку
         return f"{card_or_account_type} {masked_number}"
     else:
         return "Invalid input format"

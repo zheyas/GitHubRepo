@@ -1,5 +1,4 @@
 import json
-import os
 import re
 from collections import defaultdict
 from datetime import datetime
@@ -13,6 +12,7 @@ base_path = Path(__file__).resolve().parent.parent
 
 # Относительный путь к файлу в папке data
 file_path_xlsx = base_path / 'data' / 'operations.xlsx'
+
 
 def read_xlsx_financial_operations(file_path=file_path_xlsx) -> List[Dict[str, Any]]:
     """Читаем файл Excel и определяем нужные столбцы"""
@@ -58,7 +58,7 @@ def analyze_cashback_profitability(data: List[Dict[str, Any]], year: int, month:
         if transaction_year == year and transaction_month == month:
             cashback_summary[category] += cashback_amount
 
-    cashback_summary = {category: amount for category, amount in cashback_summary.items() if amount != 0}
+    cashback_summary = {category: amount for category, amount in cashback_summary.items()}
 
     if not cashback_summary:
         return json.dumps({"message": "Данных за указанный месяц и год не найдено."}, ensure_ascii=False, indent=4)
@@ -67,7 +67,7 @@ def analyze_cashback_profitability(data: List[Dict[str, Any]], year: int, month:
 
 
 def investment_bank(month: str, transactions: List[Dict[str, Any]], limit: int) -> float:
-    """Вычисление суммы для отложений в «Инвесткопилку» без учета кешбэка."""
+    """Calculate the amount to set aside in the 'Investment Savings' fund, excluding cashback."""
     total_investment = 0.0
 
     for transaction in transactions:
@@ -75,17 +75,17 @@ def investment_bank(month: str, transactions: List[Dict[str, Any]], limit: int) 
             transaction_date = datetime.strptime(transaction['Дата операции'], "%d.%m.%Y %H:%M:%S")
             transaction_month = transaction_date.strftime("%Y-%m")
         except ValueError:
-            print(f"Некорректный формат даты в транзакции: {transaction['Дата операции']}")
+            print(f"Invalid date format in transaction: {transaction['Дата операции']}")
             continue
 
         if transaction_month == month:
             operation_amount = float(transaction.get('Сумма операции', "0").replace(",", "."))
 
-            # Вычисляем округленную сумму операции до ближайшего предела
+            # Calculate the rounded operation amount to the nearest limit
             rounded_amount = ((operation_amount // limit) + 1) * limit
             difference = rounded_amount - operation_amount
 
-            # Учет только разницы без кешбэка
+            # Only add the difference, excluding cashback
             total_investment += difference
 
     return total_investment

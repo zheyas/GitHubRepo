@@ -1,119 +1,81 @@
-# -*- coding: utf-8 -*-
-import json
-import os
 from datetime import datetime
-from pathlib import Path
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
-import pandas as pd
-
-from src.views import (
-    fetch_converted_amount,
-    fetch_sp500_stock_prices,
-    generate_date_range,
-    generate_financial_report,
-    get_expenses_and_income_from_file,
-)
+import src.views
+from src.views import get_card_summary, get_greeting, get_stock_prices_for_multiple_tickers, get_top_transactions
 
 
-# Исправленный тест для generate_date_range
-def test_generate_date_range():
-    target_date = "01.01.2023"
+# Тест для get_stock_prices_for_multiple_tickers
+@patch('src.views.get_stock_prices')
+def test_get_stock_prices_for_multiple_tickers(mock_get_stock_prices):
+    fake_api_key = src.views.stock_api_key
+    # Мокаем результат вызова функции get_stock_prices
+    mock_get_stock_prices.return_value = [{"stock": "AAPL", "price": 150}, {"stock": "AMZN", "price": 3200}]
 
-    # Тестируем недельный интервал (начало недели - понедельник)
-    start_date, end_date = generate_date_range(target_date, "W")
-    assert start_date == datetime(2022, 12, 26)  # Начало недели, содержащей 01.01.2023
-    assert end_date == datetime(2023, 1, 1)  # Конец недели
+    tickers = ["AAPL", "AMZN"]
+    result = get_stock_prices_for_multiple_tickers(fake_api_key, tickers)
 
-    # Тестируем месячный интервал
-    start_date, end_date = generate_date_range(target_date, "M")
-    assert start_date == datetime(2023, 1, 1)  # Начало месяца
-    assert end_date == datetime(2023, 1, 31)  # Конец месяца
-
-    # Тестируем годовой интервал
-    start_date, end_date = generate_date_range(target_date, "Y")
-    assert start_date == datetime(2023, 1, 1)  # Начало года
-    assert end_date == datetime(2023, 12, 31)  # Конец года
-
-
-# Тестирование функции generate_financial_report
-@patch("src.views.pd.read_excel")
-def test_generate_financial_report(mock_read_excel):
-    # Мокируем данные
-    mock_data = {
-        'Дата операции': ["01.01.2023 12:00:00", "02.01.2023 15:00:00"],
-        'Сумма операции': [-100.0, 200.0],
-        'Категория': ["Еда", "Зарплата"]
+    assert result == {
+        "AAPL": 150,
+        "AMZN": 3200
     }
-    mock_df = pd.DataFrame(mock_data)
-    mock_read_excel.return_value = mock_df
-
-    # Генерация отчета
-    report = generate_financial_report("01.01.2023", "M")
-    report_data = json.loads(report)
-
-    # Печать для отладки
-    print("Исходные данные:")
-    print(mock_df)
-    print("Отчет:")
-    print(report_data)
-
-    # Проверка структуры отчета
-    assert "Расходы" in report_data
-    assert "Поступления" in report_data
-    assert report_data["Расходы"]["Общая сумма"] == 100  # Проверка на общую сумму расходов
-    assert report_data["Поступления"]["Общая сумма"] == 200  # Проверка на общую сумму поступлений
+    mock_get_stock_prices.assert_any_call(fake_api_key, "AAPL")
+    mock_get_stock_prices.assert_any_call(fake_api_key, "AMZN")
 
 
-# Тестирование функции fetch_sp500_stock_prices
-@patch("src.views.urlopen")
-def test_fetch_sp500_stock_prices(mock_urlopen):
-    # Мокируем ответ API
-    mock_response = Mock()
-    mock_response.read.return_value = json.dumps([{"symbol": "AAPL", "price": 150.0}]).encode("utf-8")
-    mock_urlopen.return_value = mock_response
+# Тест для get_card_summary
+def test_get_card_summary():
+    operations = [
+        {"Последние 4 цифры карты": "1234", "Сумма операции": 1000},
+        {"Последние 4 цифры карты": "5678", "Сумма операции": -500},
+        {"Последние 4 цифры карты": "9876", "Сумма операции": 2000}
+    ]
 
-    # Проверка вызова функции
-    prices = fetch_sp500_stock_prices("fake_api_key", ["AAPL"])
-    assert prices == {"AAPL": 150.0}
+    result = get_card_summary(operations)
 
+    expected_result = [
+        {"last_four_digits": "1234", "total_expenses": 1000, "cashback": 10},
+        {"last_four_digits": "5678", "total_expenses": 500, "cashback": 5},
+        {"last_four_digits": "9876", "total_expenses": 2000, "cashback": 20}
+    ]
 
-# Тестирование функции fetch_converted_amount
-@patch("src.views.requests.get")
-def test_fetch_converted_amount(mock_get):
-    # Мокируем ответ API
-    mock_response = Mock()
-    mock_response.status_code = 200
-    mock_response.json.return_value = {"result": 75.0}
-    mock_get.return_value = mock_response
-
-    # Проверка конверсии валют
-    converted_amount = fetch_converted_amount("fake_api_key", 1, "USD", "RUB")
-    assert converted_amount == 75.0
+    assert result == expected_result
 
 
-# Исправленный тест для get_expenses_and_income_from_file
-# Определение вашей тестовой функции с использованием unittest.mock
-@patch("src.views.pd.read_excel")
-def test_get_expenses_and_income_from_file(mock_read_excel):
-    # Мокируем данные
-    mock_data = {
-        'Дата операции': ["01.01.2023 12:00:00", "02.01.2023 15:00:00"],
-        'Сумма операции': [-100.0, 200.0],
-        'Категория': ["Еда", "Зарплата"]
-    }
-    mock_df = pd.DataFrame(mock_data)
-    mock_read_excel.return_value = mock_df
+# Тест для get_top_transactions
+def test_get_top_transactions():
+    operations = [
+        {"Сумма операции": 1000, "Описание": "Транзакция 1"},
+        {"Сумма операции": 500, "Описание": "Транзакция 2"},
+        {"Сумма операции": 1500, "Описание": "Транзакция 3"}
+    ]
 
-    # Задаем даты для фильтрации
-    start_date = datetime(2023, 1, 1)
-    end_date = datetime(2023, 1, 2)
-    # Получаем путь к текущему файлу и переходим на уровень выше, чтобы стать в корень проекта
-    base_path = Path(__file__).resolve().parent.parent
+    result = get_top_transactions(operations, top_n=2)
 
-    # Относительный путь к файлу в папке data
-    file_path = base_path / 'data' / 'operations.xlsx'
-    # Вызов функции и проверка результатов
-    expenses, income = get_expenses_and_income_from_file(file_path,start_date, end_date)
-    assert expenses == {"Еда": 100.0}
-    assert income == {}
+    expected_result = [
+        {"Сумма операции": 1500, "Описание": "Транзакция 3"},
+        {"Сумма операции": 1000, "Описание": "Транзакция 1"}
+    ]
+
+    assert result == expected_result
+
+
+# Тест для get_greeting
+def test_get_greeting():
+    with patch('src.views.datetime') as mock_datetime:
+        # Мокаем время
+        mock_datetime.now.return_value = datetime(2024, 11, 9, 10, 0)
+        result = get_greeting()
+        assert result == "Доброе утро"
+
+        mock_datetime.now.return_value = datetime(2024, 11, 9, 15, 0)
+        result = get_greeting()
+        assert result == "Добрый день"
+
+        mock_datetime.now.return_value = datetime(2024, 11, 9, 19, 0)
+        result = get_greeting()
+        assert result == "Добрый вечер"
+
+        mock_datetime.now.return_value = datetime(2024, 11, 9, 3, 0)
+        result = get_greeting()
+        assert result == "Доброй ночи"
